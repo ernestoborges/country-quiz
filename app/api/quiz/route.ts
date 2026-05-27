@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import countries from "@/data/countries.json";
 
-export async function GET(request: Request) {
-  const url = new URL(request.url);
+export async function GET(req: Request) {
+  const url = new URL(req.url);
   const lang = url.searchParams.get("lang") || "eng";
   const nameType = url.searchParams.get("nameType") || "official";
 
@@ -43,8 +43,8 @@ export async function GET(request: Request) {
   });
 }
 
-export async function POST(request: Request) {
-  const url = new URL(request.url);
+export async function POST(req: Request) {
+  const url = new URL(req.url);
   const lang = url.searchParams.get("lang") || "eng";
   const nameType =
     url.searchParams.get("nameType") === "common" ? "common" : "official";
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = await request.json();
+  const body = await req.json();
 
   const country = countries.find((c) => c.cca2 === body.country);
 

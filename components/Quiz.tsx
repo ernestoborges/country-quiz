@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { SkeletonQuiz } from "./SkeletonLoader";
+import SettingsModal from "./SettingsModal";
+import { IoSettingsSharp } from "react-icons/io5";
 
 type Option = {
   code: string;
@@ -21,13 +23,26 @@ type QuizAnswer = {
 };
 
 export default function Quiz() {
+  const [language, setLanguage] = useState<string>(() => {
+    if (typeof window === "undefined") return "por";
+    return localStorage.getItem("quiz_language") ?? "por";
+  });
+  const [nameType, setNameType] = useState<"official" | "common">(() => {
+    if (typeof window === "undefined") return "common";
+    const savedNameType = localStorage.getItem("quiz_nameType");
+    return savedNameType === "official" || savedNameType === "common"
+      ? savedNameType
+      : "common";
+  });
+
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [answer, setAnswer] = useState<QuizAnswer | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   function handleAnswer(answer: string) {
     setIsSubmitting(true);
-    fetch("/api/quiz?lang=por&nameType=common", {
+    fetch(`/api/quiz?lang=${language}&nameType=${nameType}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -56,12 +71,43 @@ export default function Quiz() {
 
   async function fetchQuizData() {
     try {
-      const res = await fetch("/api/quiz?lang=por&nameType=common");
+      const res = await fetch(
+        `/api/quiz?lang=${language}&nameType=${nameType}`,
+      );
       const data = await res.json();
       return data;
     } catch (err) {
       console.error("Error fetching quiz data:", err);
       return null;
+    }
+  }
+
+  async function updateTranslations(language: string, nameType: string) {
+    if (!quizData) return;
+    const codes = quizData.options.map((o) => o.code).join(",");
+    try {
+      const res = await fetch(
+        `/api/quiz/translate?lang=${language}&type=${nameType}&codes=${codes}`,
+      );
+      const translations = await res.json();
+      setQuizData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          options: translations,
+        };
+      });
+      if (answer) {
+        const correctTranslation = translations.find(
+          (t: Option) => t.code === answer.correctAnswer.code,
+        );
+        setAnswer({
+          ...answer,
+          correctAnswer: correctTranslation,
+        });
+      }
+    } catch (err) {
+      console.error("Error updating translations:", err);
     }
   }
 
@@ -79,9 +125,12 @@ export default function Quiz() {
 
   return (
     <div className="flex h-[100vh] w-full max-w-[400px] flex-col items-center justify-center gap-4 rounded bg-gray-800 p-8 shadow md:h-full">
-      <div>
-        <button className="cursor-pointer rounded bg-blue-500 p-2 hover:bg-blue-600">
-          settings
+      <div className="flex w-full items-center justify-end">
+        <button
+          className="cursor-pointer rounded bg-blue-500 p-2 hover:bg-blue-600"
+          onClick={() => setIsSettingsOpen(true)}
+        >
+          <IoSettingsSharp />
         </button>
       </div>
       <div>
@@ -130,6 +179,15 @@ export default function Quiz() {
           </button>
         )}
       </div>
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onSave={updateTranslations}
+        onClose={() => setIsSettingsOpen(false)}
+        language={language}
+        setLanguage={setLanguage}
+        nameType={nameType}
+        setNameType={setNameType}
+      />
     </div>
   );
 }

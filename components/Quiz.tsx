@@ -78,14 +78,19 @@ export default function Quiz() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 bg-gray-800 p-8 rounded shadow w-full h-[100vh] md:h-full max-w-[400px]">
+    <div className="flex h-[100vh] w-full max-w-[400px] flex-col items-center justify-center gap-4 rounded bg-gray-800 p-8 shadow md:h-full">
+      <div>
+        <button className="cursor-pointer rounded bg-blue-500 p-2 hover:bg-blue-600">
+          settings
+        </button>
+      </div>
       <div>
         <h2 className="text-2xl text-white">
           Qual país corresponde a esta bandeira?
         </h2>
       </div>
       <div>
-        <div className="bg-white p-1 rounded">
+        <div className="rounded bg-white p-1">
           <Image
             src={`https://flagcdn.com/${quizData.country.toLowerCase()}.svg`}
             alt={`${quizData.country} Flag`}
@@ -115,11 +120,11 @@ export default function Quiz() {
           ))}
         </ul>
       </div>
-      <div className="h-10 w-full flex items-center justify-end">
+      <div className="flex h-10 w-full items-center justify-end">
         {answer !== null && (
           <button
             onClick={handleReset}
-            className="bg-blue-500 text-white px-4 py-2 rounded m-2"
+            className="m-2 rounded bg-blue-500 px-4 py-2 text-white"
           >
             Jogar Novamente
           </button>
@@ -170,7 +175,7 @@ function OptionItem({
     return (
       <li
         key={option.code}
-        className={`${commonClasses} bg-blue-500 cursor-pointer hover:bg-blue-600`}
+        className={`${commonClasses} cursor-pointer bg-blue-500 hover:bg-blue-600`}
         onClick={() => onClick(option.name)}
       >
         {option.name}

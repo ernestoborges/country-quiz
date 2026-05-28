@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import countries from "@/data/countries.json";
+import territories from "@/data/territories.json";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const lang = url.searchParams.get("lang") || "eng";
   const nameType = url.searchParams.get("nameType") || "official";
+  const questionsParam = url.searchParams.get("questions");
+  const questions = questionsParam ? questionsParam.split(",") : ["countries"];
 
   if (nameType !== "official" && nameType !== "common") {
     return NextResponse.json(
@@ -13,7 +16,12 @@ export async function GET(req: Request) {
     );
   }
 
-  const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+  const dataToUse = [
+    ...(questions.includes("countries") ? countries : []),
+    ...(questions.includes("territories") ? territories : []),
+  ];
+
+  const randomCountry = dataToUse[Math.floor(Math.random() * dataToUse.length)];
   const correctOption = {
     code: randomCountry.cca2,
     name:
@@ -22,7 +30,7 @@ export async function GET(req: Request) {
       ]?.[nameType] || randomCountry.name[nameType],
   };
 
-  const wrongOptions = countries
+  const wrongOptions = dataToUse
     .filter((c) => c.cca2 !== correctOption.code)
     .map((c) => ({
       code: c.cca2,
@@ -58,7 +66,9 @@ export async function POST(req: Request) {
 
   const body = await req.json();
 
-  const country = countries.find((c) => c.cca2 === body.country);
+  const dataToUse = [...countries, ...territories];
+
+  const country = dataToUse.find((c) => c.cca2 === body.country);
 
   if (!country) {
     return NextResponse.json({ message: "Country not found" }, { status: 404 });

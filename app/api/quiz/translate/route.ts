@@ -16,7 +16,9 @@ export async function GET(req: Request) {
 
     return {
       code,
-      name: translations?.[lang]?.[translationType] || country?.name,
+      name:
+        translations?.[lang]?.[translationType] ||
+        country?.name[translationType],
     };
   });
 

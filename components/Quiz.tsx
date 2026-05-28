@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { SkeletonQuiz } from "./SkeletonLoader";
 import SettingsModal from "./SettingsModal";
 import { IoSettingsSharp } from "react-icons/io5";
+import { FiArrowLeft } from "react-icons/fi";
 
 type Option = {
   code: string;
@@ -22,7 +23,13 @@ type QuizAnswer = {
   correctAnswer: Option;
 };
 
-export default function Quiz() {
+export default function Quiz({
+  gameMode = "flag",
+  answerMode = "multiple-choice",
+}: {
+  gameMode?: "flag" | "map";
+  answerMode?: "multiple-choice" | "text";
+}) {
   const [language, setLanguage] = useState<string>(() => {
     if (typeof window === "undefined") return "por";
     return localStorage.getItem("quiz_language") ?? "por";
@@ -67,6 +74,13 @@ export default function Quiz() {
     fetchQuizData().then((data) => {
       if (data) setQuizData(data);
     });
+  }
+
+  function getCountryImageUrl(countryCode: string, type: "flag" | "map") {
+    if (type === "map") {
+      return `https://cdn-assets.teuteuf.fr/data/common/country-shapes/${countryCode.toLowerCase()}.svg`;
+    }
+    return `https://flagcdn.com/${countryCode.toLowerCase()}.svg`;
   }
 
   async function fetchQuizData() {
@@ -125,9 +139,15 @@ export default function Quiz() {
 
   return (
     <div className="flex h-[100vh] w-full max-w-[400px] flex-col items-center justify-center gap-4 rounded bg-gray-800 p-8 shadow md:h-full">
-      <div className="flex w-full items-center justify-end">
+      <div className="flex w-full items-center justify-between">
         <button
-          className="cursor-pointer rounded bg-blue-500 p-2 hover:bg-blue-600"
+          className="aspect-square cursor-pointer rounded bg-gray-500 p-2 text-white hover:bg-gray-600"
+          onClick={() => (window.location.href = "/")}
+        >
+          <FiArrowLeft />
+        </button>
+        <button
+          className="aspect-square cursor-pointer rounded bg-blue-500 p-2 hover:bg-blue-600"
           onClick={() => setIsSettingsOpen(true)}
         >
           <IoSettingsSharp />
@@ -135,14 +155,15 @@ export default function Quiz() {
       </div>
       <div>
         <h2 className="text-2xl text-white">
-          Qual país corresponde a esta bandeira?
+          Qual país corresponde a esta{" "}
+          {gameMode === "flag" ? "bandeira" : "mapa"}?
         </h2>
       </div>
       <div>
         <div className="rounded bg-white p-1">
           <Image
-            src={`https://flagcdn.com/${quizData.country.toLowerCase()}.svg`}
-            alt={`${quizData.country} Flag`}
+            src={getCountryImageUrl(quizData.country, gameMode)}
+            alt={`${quizData.country} ${gameMode === "flag" ? "Flag" : "Map"}`}
             width={200}
             height={100}
           />

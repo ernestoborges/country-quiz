@@ -26,9 +26,11 @@ type QuizAnswer = {
 export default function Quiz({
   gameMode = "flag",
   answerMode = "multiple-choice",
+  questions = ["paises"],
 }: {
   gameMode?: "flag" | "map";
   answerMode?: "multiple-choice" | "text";
+  questions: string[];
 }) {
   const [language, setLanguage] = useState<string>(() => {
     if (typeof window === "undefined") return "por";
@@ -86,7 +88,7 @@ export default function Quiz({
   async function fetchQuizData() {
     try {
       const res = await fetch(
-        `/api/quiz?lang=${language}&nameType=${nameType}`,
+        `/api/quiz?lang=${language}&nameType=${nameType}&questions=${questions.join(",")}`,
       );
       const data = await res.json();
       return data;

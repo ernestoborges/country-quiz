@@ -6,13 +6,17 @@ import { useSearchParams } from "next/navigation";
 export default function Content() {
   const searchParams = useSearchParams();
   const gameMode = (searchParams.get("gameMode") as "flag" | "map") || "flag";
+
+  const questionsParam = searchParams.get("questions");
+  const questions = questionsParam ? questionsParam.split(",") : ["countries"];
+
   const answerMode =
     (searchParams.get("answerMode") as "multiple-choice" | "text") ||
     "multiple-choice";
 
   return (
     <main className="flex w-full max-w-3xl flex-1 flex-col items-center justify-center bg-white md:px-16 md:py-32 dark:bg-black">
-      <Quiz gameMode={gameMode} answerMode={answerMode} />
+      <Quiz gameMode={gameMode} answerMode={answerMode} questions={questions} />
     </main>
   );
 }

@@ -7,6 +7,11 @@ const gameModes: { id: "flag" | "map"; name: string }[] = [
   { id: "map", name: "Mapa" },
 ];
 
+const questionsToInclude = [
+  { id: "countries", name: "Países" },
+  { id: "territories", name: "Territórios" },
+];
+
 const answerModes: { id: "multiple-choice" | "text"; name: string }[] = [
   { id: "multiple-choice", name: "Multipla escolha" },
   { id: "text", name: "Escrita" },
@@ -16,6 +21,9 @@ export default function MainMenu() {
   const [selectedGameMode, setSelectedGameMode] = useState<"flag" | "map">(
     "flag",
   );
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([
+    "countries",
+  ]);
   const [selectedAnswerMode, setSelectedAnswerMode] = useState<
     "text" | "multiple-choice"
   >("multiple-choice");
@@ -28,7 +36,7 @@ export default function MainMenu() {
           Teste seus conhecimentos sobre países do mundo!
         </p>
       </div>
-      <div>
+      <div className="flex w-full flex-col gap-8">
         <section className="flex w-full flex-col gap-4">
           <div>
             <h2>Modo de jogo</h2>
@@ -48,6 +56,41 @@ export default function MainMenu() {
                 />
                 <OptionItem isSelected={selectedGameMode === mode.id}>
                   {mode.name}
+                </OptionItem>
+              </label>
+            ))}
+          </div>
+        </section>
+        <section className="flex w-full flex-col gap-4">
+          <div>
+            <h2>Questões a incluir</h2>
+            <hr />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {questionsToInclude.map((question) => (
+              <label htmlFor={question.id} key={question.id}>
+                <input
+                  type="checkbox"
+                  id={question.id}
+                  name="questions"
+                  value={question.id}
+                  checked={selectedQuestions.includes(question.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedQuestions([...selectedQuestions, question.id]);
+                    } else {
+                      if (selectedQuestions.length === 1) return;
+                      setSelectedQuestions(
+                        selectedQuestions.filter((id) => id !== question.id),
+                      );
+                    }
+                  }}
+                  className="hidden"
+                />
+                <OptionItem
+                  isSelected={selectedQuestions.includes(question.id)}
+                >
+                  {question.name}
                 </OptionItem>
               </label>
             ))}
@@ -88,6 +131,7 @@ export default function MainMenu() {
           onClick={() => {
             const params = new URLSearchParams({
               gameMode: selectedGameMode,
+              questions: selectedQuestions.join(","),
               answerMode: selectedAnswerMode,
             });
             window.location.href = `/game?${params.toString()}`;
@@ -111,7 +155,7 @@ function OptionItem({
 }) {
   return (
     <div
-      className={`flex ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} aspect-square w-full items-center justify-center rounded px-4 py-2 text-white ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${isSelected ? "bg-blue-500" : "bg-gray-700 hover:bg-gray-600"}`}
+      className={`flex ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} w-full items-center justify-center rounded px-4 py-2 text-white ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${isSelected ? "bg-blue-500" : "bg-gray-700 hover:bg-gray-600"}`}
     >
       {children}
     </div>
